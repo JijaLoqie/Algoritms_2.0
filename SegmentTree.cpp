@@ -3,40 +3,64 @@
 
 using namespace std;
 
-vector<long long> t;
+vector<pair<long long, long long>> t;
 void build(vector<long long> &a, int v, int lt, int rt) {
     if (lt == rt) {
-        t[v] = a[lt];
+        t[v] = make_pair(a[lt], 1);
     } else {
         int mid = (lt + rt) / 2;
         build(a, 2*v, lt, mid);
         build(a, 2*v + 1, mid + 1, rt);
-        t[v] = t[v*2] + t[v*2 + 1];
+        int k;
+        if (t[v*2].first > t[v*2+1].first) {
+            k = t[v*2 + 1].second;
+        } else if (t[v*2].first < t[v*2+1].first) {
+            k = t[v*2].second;
+        } else {
+            k = t[v*2].second + t[v*2 + 1].second;
+        }
+        t[v] = make_pair(min(t[v*2], t[v*2 + 1]).first, k);
     }
 }
 
-long long sum(int v,int lt, int rt, int l, int r) {
+pair<long long, long long> mina(int v, int lt, int rt, int l, int r) {
     if (l > r) {
-        return 0;
+        return make_pair(1e9, 1e9);
     }
     if (l == lt && r == rt) {
         return t[v];
     }
     int mid = (lt + rt) / 2;
-    return sum(v*2, lt, mid, l, min(r, mid)) + sum(v*2 + 2, mid + 1, rt, max(l, mid + 1), r); //
+    return min(mina(v*2, lt, mid, l, min(r, mid)), mina(v*2 + 1, mid + 1, rt, max(l, mid + 1), r)); //
 }
 
-void update(int v, int lt, int rt, int pos, int val) {
+void update(int v, int lt, int rt, int pos, long long val) {
     if (lt == rt) {
-        t[v] = val
+        int k;
+        if (t[v*2].first > t[v*2+1].first) {
+            k = t[v*2 + 1].second;
+        } else if (t[v*2].first < t[v*2+1].first) {
+            k = t[v*2].second;
+        } else {
+            k = t[v*2].second + t[v*2 + 1].second;
+        }
+        t[v] = make_pair(val, k);
     } else {
         int mid = (lt + rt) / 2;
         if (pos <= mid) {
             update(v*2, lt, mid, pos, val);
         } else {
-            update(v*2 + 1, mid + 1, pos, val);
+            update(v*2 + 1, mid + 1, rt, pos, val);
         }
-        t[v] = t[v*2] + t[v*2 + 1]; //
+        int k;
+        if (t[v*2].first > t[v*2+1].first) {
+            k = t[v*2 + 1].second;
+        } else if (t[v*2].first < t[v*2+1].first) {
+            k = t[v*2].second;
+        } else {
+            k = t[v*2].second + t[v*2 + 1].second;
+        }
+        t[v] = make_pair(min(t[v*2], t[v*2 + 1]).first, k); //
     }
 }
 
@@ -45,24 +69,24 @@ void update(int v, int lt, int rt, int pos, int val) {
 
 
 int main() {
-    int n;
-    cin >> n;
+    int n, q;
+    cin >> n >> q;
     vector<long long> a(n);
-    t.resize(4 * n);
+    t.resize(5 * n);
     for (int i = 0; i < n; i++) {
         cin >> a[i];
     }
     build(a, 1, 0, n - 1);
-    int q;
-    cin >> q;
     while (q--) {
-        string s;
+        int s;
         long long l, r;
         cin >> s >> l >> r;
-        if (s == 'sum') {
-            cout << sum(1, 0, n - 1, l - 1, r - 1) << '\n';
-        } else if (s == 'add') {
-            update(1, 0, n - 1, l - 1, r);
+
+        if (s == 2) {
+            pair<long long, long long> d = mina(1, 0, n - 1, l, r - 1);
+            cout << d.first << ' ' << d.second << '\n';
+        } else if (s == 1) {
+            update(1, 0, n - 1, l, r);
         }
     }
 }
