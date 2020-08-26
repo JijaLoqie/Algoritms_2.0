@@ -1,5 +1,6 @@
 #include <vector>
 #include <iostream>
+#include <cmath>
 using namespace std;
 
 int main() {
@@ -18,7 +19,7 @@ int main() {
     while (m--) {
         long long l, r, ans = 0;
         cin >> l >> r;
-        for (int i = 0; i <= r) {
+        for (int i = 0; i <= r;) {
             if (i%q == 0 && i + q - 1 <= r) {
                 ans += t[i/q]; //code
                 i += q;
